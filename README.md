@@ -22,7 +22,7 @@ The very first thing we want to do is add a reference to our Firebase when our m
 * In the ```ListContainer``` component add a ```componentDidMount``` method which has the following things inside it
   - create a reference to your new firebase *using new Firebase(YOUR-URL)* and save that to a variable called ```firebaseRef``` that lives on the component's *```this```* object. 
   - Now, use that ref we just made to invoke the ```.on``` method and pass it ```child_added``` as well as a callback function which has snapshot as its only parameter.
-  - Inside the callback function use ```setState``` to add ```snapshot.val()``` to our state's ```list``` array. *hint: remember, don't modify state directly. Though it seems weird, it's pretty common practice to use ```.concat``` inside of ```this.setState``` to modify the state.
+  - Inside the callback function use ```setState``` to an object to our state's ```list``` array. This object is going to have a property of 'key' whose value is ```snapshot.key()``` and another property of 'val' whose value is ```snapshot.val()```. The reason we need both the key and val is becuase in order to remove items (which we'll do later) with firebase we have to know the random characters firebase assigns to the value we want to remove. *hint: remember, don't modify state directly. Though it seems weird, it's pretty common practice to use ```.concat``` inside of ```this.setState``` to modify the state.
 
 The componentDidMount method should now look similar to this. 
 ```javascript
@@ -37,6 +37,35 @@ componentDidMount: function(){
 ```
 
 Now what will happen is the callback function will run for every item that's at the /todos endpoint as well as anything another item gets added there.
+
+We're not quite done though. We also need to set up a ```child_removed``` hook which will tell us which item was removed from our firebase so we can then update that state removing that item. 
+
+* Just like with ```child_added``` invoke ```on('child_removed'``` passing it a callback which has a parameter of snapshot.
+* Now, use ```snapshot.key()``` to get the specific key of the item which was removed and save it to a variable called key
+* Create a reference to your state and save it to a variable called ```list```.
+* Loop through list, checking if any of the items in the list have a ```key``` property which is equal to the key which was removed. If so, slice it out and break from the loop.
+* Once your loop is finished use ```setState``` to set the state with the removed item deleted. *You can also use filter to do this as I did in my code below.*
+
+Your componentDidMount method should now look like this,
+
+componentDidMount: function(){
+  this.firebaseRef = new Firebase("https://reactweek-todofire.firebaseio.com/todos");
+  this.firebaseRef.on('child_added', function(snapshot){
+    this.setState({
+      list: this.state.list.concat([{key: snapshot.key(), val: snapshot.val()}])
+    })
+  }.bind(this));
+
+  this.firebaseRef.on('child_removed', function(snapshot){
+    var key = snapshot.key();
+    var newList = this.state.list.filter(function(item){
+      return item.key !== key;
+    });
+    this.setState({
+      list: newList
+    });
+  }.bind(this));
+}
 
 ####Step 4: Handle Add Item
 
@@ -55,19 +84,28 @@ handleAddItem: function(newItem){
 Pretty slick right? We don't need to worry about updating the list because our ```child_added``` callback we added to ```componentDidMount``` is doing all that for us.
 
 ####Step 5: Handle Remove Item
-This method is going to be almost exactly the same except for one minor addition.
+Since we cached the firebase key on each object in our list array we can now use ```.remove()``` to remove that item from our firebase.
 
-* After you invoke ```.splice```, add a line that uses the firbase property ```.set()``` passing in ```newList``` to let firebase know about the updates. 
+* create a variable called item and set it equal to the item in our list located at the index that's being passed in to handleRemoveItem.
+* Using our firebase reference, use ```.child()``` and pass in the key that's on the item variable we just got, then invoke ```.remove()```. 
 
-Your code should look like this.
+Your code should look like this,
 
+```javascript
 handleRemoveItem: function(index){
-  var newList = this.state.list;
-  newList.splice(index, 1);
-  this.firebaseRef.set(newList);
-  this.setState({
-    list: listRef
-  })
+  var item = this.state.list[index];
+  this.firebaseRef.child(item.key).remove();
 }
+```
 
-and that's it. With the compartmentalization of React we only need to modify one component (where the data actually lives) and everything else remains the same.  
+####Step 6: Change Items Prop
+Since we changed our list data structure earlier from being just an array or strings to now an array of object, we either have to modify our List component, or do some changes to our array before we pass the list array into the List component. I vote for modifying the data before we pass it in so we can keep our List component that same. 
+
+* Use map to map over ```this.state.list``` so that you only pass List all of the ```.val``` properties on the list. 
+Like this,
+
+```<List items={this.state.list.map(function(item){return item.val})} remove={this.handleRemoveItem}/>```
+
+and that's it.
+
+*It was a little annoying trying to keep our components state in sync with our firebase. Because of this, the Firebase devs made a nice Mixin you can use with React in order to keep both in sync. Check it out at [HERE](https://www.firebase.com/docs/web/libraries/react/?utm_source=reactfire)
