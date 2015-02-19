@@ -106,6 +106,6 @@ Like this,
 
 ```<List items={this.state.list.map(function(item){return item.val})} remove={this.handleRemoveItem}/>```
 
-and that's it.
+and that's it. Now our todo list is persisting our data with firebase.
 
 *It was a little annoying trying to keep our components state in sync with our firebase. Because of this, the Firebase devs made a nice Mixin you can use with React in order to keep both in sync. Check it out at [HERE](https://www.firebase.com/docs/web/libraries/react/?utm_source=reactfire)
