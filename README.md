@@ -1,7 +1,7 @@
 # TodoFire
 
 ####Objectives
-Because the project today is rather large, this mini project will be short. We're going to take the first Mini Project we did (basic todo list), and add firebase to it to persist our list. 
+Because the project today is rather large, this mini project will be short. We're going to take the first Mini Project we did (basic todo list), and add firebase to it to persist our list. [Live version here](http://reactweek.com/projects/mini-todofire/). 
 
 ####Step 1: Clone Todo List
 * Head over to your Mini Project from Day 1 (Todolist) and clone it. 
