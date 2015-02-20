@@ -5,8 +5,8 @@ Because the project today is rather large, this mini project will be short. We'r
 
 ####Step 1: Clone Todo List
 * Head over to your Mini Project from Day 1 (Todolist) and clone it. 
-* Once you clone it cd into the directory and run ```rm -rf .git``` to remove all the old git stuff.
-* If you'd like, fork this proejct then use ```git remote add origin https://github.com/USERNAME/react-mini3-todofire``` to link your code with github.
+* Once you clone it, cd into the directory and run ```rm -rf .git``` to remove all the old git stuff.
+* If you'd like, fork this project then use ```git remote add origin https://github.com/USERNAME/react-mini3-todofire``` to link your code with github.
 * Run ```npm install``` to install all the proper dependencies.
 * Run ```npm install --save firebase``` to add firebase as a dependency. 
 * run ```webpack -w``` to watch our file for changes.
@@ -17,12 +17,13 @@ Because the project today is rather large, this mini project will be short. We'r
 
 ####Step 3: Add Firebase Ref.
 
-The very first thing we want to do is add a reference to our Firebase when our main component which is handling our todo list mounts.
+The very first thing we want to do is add a reference to our Firebase when our main component, which is handling our todo list, mounts.
 
+* At the top of ```ListContainer``` require the firebase module.
 * In the ```ListContainer``` component add a ```componentDidMount``` method which has the following things inside it
   - create a reference to your new firebase *using new Firebase(YOUR-URL)* and save that to a variable called ```firebaseRef``` that lives on the component's *```this```* object. 
-  - Now, use that ref we just made to invoke the ```.on``` method and pass it ```child_added``` as well as a callback function which has snapshot as its only parameter.
-  - Inside the callback function use ```setState``` to an object to our state's ```list``` array. This object is going to have a property of 'key' whose value is ```snapshot.key()``` and another property of 'val' whose value is ```snapshot.val()```. The reason we need both the key and val is becuase in order to remove items (which we'll do later) with firebase we have to know the random characters firebase assigns to the value we want to remove. *hint: remember, don't modify state directly. Though it seems weird, it's pretty common practice to use ```.concat``` inside of ```this.setState``` to modify the state.
+  - Now, use that ref we just made to invoke the firebase ```.on``` method and pass it ```child_added``` as well as a callback function which has ```snapshot``` as its only parameter.
+  - Inside the callback function use ```setState``` to add an object to our state's ```list``` array. This object is going to have a property of 'key' whose value is ```snapshot.key()``` and another property of 'val' whose value is ```snapshot.val()```. The reason we need both the key and val is because in order to remove items (which we'll do later) with firebase we have to know the random characters firebase assigns to the value we want to remove. *hint: Remember, don't modify state directly. Though it seems weird, it's pretty common practice to use ```.concat``` inside of ```this.setState``` to modify the state.
 
 The componentDidMount method should now look similar to this. 
 ```javascript
@@ -30,24 +31,24 @@ componentDidMount: function(){
   this.firebaseRef = new Firebase("https://reactweek-todofire.firebaseio.com/todos");
   this.firebaseRef.on('child_added', function(snapshot){
     this.setState({
-      list: this.state.list.concat([snapshot.val()])
+      list: this.state.list.concat([{key: snapshot.key(), val: snapshot.val()}])
     })
   }.bind(this));
 }
 ```
 
-Now what will happen is the callback function will run for every item that's at the /todos endpoint as well as anything another item gets added there.
+Now what will happen is the callback function in our ```.on``` method will run for every item that's at the /todos endpoint as well as anytime another item gets added there.
 
 We're not quite done though. We also need to set up a ```child_removed``` hook which will tell us which item was removed from our firebase so we can then update that state removing that item. 
 
-* Just like with ```child_added``` invoke ```on('child_removed'``` passing it a callback which has a parameter of snapshot.
+* Just like with ```child_added``` invoke ```.on('child_removed'``` passing it a callback which has a parameter of snapshot.
 * Now, use ```snapshot.key()``` to get the specific key of the item which was removed and save it to a variable called key
 * Create a reference to your state and save it to a variable called ```list```.
 * Loop through list, checking if any of the items in the list have a ```key``` property which is equal to the key which was removed. If so, slice it out and break from the loop.
 * Once your loop is finished use ```setState``` to set the state with the removed item deleted. *You can also use filter to do this as I did in my code below.*
 
 Your componentDidMount method should now look like this,
-
+```javascript
 componentDidMount: function(){
   this.firebaseRef = new Firebase("https://reactweek-todofire.firebaseio.com/todos");
   this.firebaseRef.on('child_added', function(snapshot){
@@ -66,7 +67,7 @@ componentDidMount: function(){
     });
   }.bind(this));
 }
-
+```
 ####Step 4: Handle Add Item
 
 The next method we need to modify is the handleAddItem method. Right now it's just concerned with the local ```list``` state. However, we want it to be concerned with our actual firebase database. 
@@ -99,7 +100,7 @@ handleRemoveItem: function(index){
 ```
 
 ####Step 6: Change Items Prop
-Since we changed our list data structure earlier from being just an array or strings to now an array of object, we either have to modify our List component, or do some changes to our array before we pass the list array into the List component. I vote for modifying the data before we pass it in so we can keep our List component that same. 
+Since we changed our list data structure earlier from being just an array or strings to now an array of object, we either have to modify our List component, or do some changes to our array before we pass the list array into the List component. I vote for modifying the data before we pass it in so we can keep our List component the same. 
 
 * Use map to map over ```this.state.list``` so that you only pass List all of the ```.val``` properties on the list. 
 Like this,
