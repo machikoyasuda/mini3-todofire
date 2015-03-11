@@ -23,7 +23,7 @@ The very first thing we want to do is add a reference to our Firebase when our m
 * In the ```ListContainer``` component add a ```componentDidMount``` method which has the following things inside it
   - create a reference to your new firebase *using new Firebase(YOUR-URL)* and save that to a variable called ```firebaseRef``` that lives on the component's *```this```* object. 
   - Now, use that ref we just made to invoke the firebase ```.on``` method and pass it ```child_added``` as well as a callback function which has ```snapshot``` as its only parameter.
-  - Inside the callback function use ```setState``` to add an object to our state's ```list``` array. This object is going to have a property of 'key' whose value is ```snapshot.key()``` and another property of 'val' whose value is ```snapshot.val()```. The reason we need both the key and val is because in order to remove items (which we'll do later) with firebase we have to know the random characters firebase assigns to the value we want to remove. *hint: Remember, don't modify state directly. Though it seems weird, it's pretty common practice to use ```.concat``` inside of ```this.setState``` to modify the state.
+  - Inside the callback function use ```setState``` to add an object to our state's ```list``` array. This object is going to have a property of 'key' whose value is ```snapshot.key()``` and another property of 'val' whose value is ```snapshot.val()```. The reason we need both the key and val is because in order to remove items (which we'll do later) with firebase we have to know the random characters firebase assigns to the value we want to remove. *hint: Remember, don't modify state directly. Though it seems weird, it's pretty common practice to use ```.concat``` inside of ```this.setState``` to modify the state.*
 
 The componentDidMount method should now look similar to this. 
 ```javascript
@@ -88,7 +88,7 @@ Pretty slick right? We don't need to worry about updating the list because our `
 Since we cached the firebase key on each object in our list array we can now use ```.remove()``` to remove that item from our firebase.
 
 * create a variable called item and set it equal to the item in our list located at the index that's being passed in to handleRemoveItem.
-* Using our firebase reference, use ```.child()``` and pass in the key that's on the item variable we just got, then invoke ```.remove()```. 
+* Using our firebase reference, use ```.child()``` and pass in the key property that's on the item variable we just got, then invoke ```.remove()```. 
 
 Your code should look like this,
 
